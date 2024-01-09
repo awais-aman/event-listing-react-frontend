@@ -11,7 +11,14 @@ export const RequireAuth = ({ children }) => {
   return children;
 };
 
+// Signing in flips isAuthenticated before SignIn's own navigate() lands, so
+// this redirect has to honour the page that asked for the sign-in as well.
 export const GuestOnly = ({ children }) => {
   const { state } = useEvent();
-  return state.isAuthenticated ? <Navigate to="/" replace /> : children;
+  const location = useLocation();
+
+  if (state.isAuthenticated) {
+    return <Navigate to={location.state?.from?.pathname ?? "/"} replace />;
+  }
+  return children;
 };
