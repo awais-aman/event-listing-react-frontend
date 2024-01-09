@@ -71,8 +71,8 @@ const EventForm = ({
       }
       toast.success(`Event is ${isEdit ? "updated" : "created"} successfully!`, "Success");
       onClose();
-    } catch {
-      toast.error("Something went wrong!", "Error");
+    } catch (error) {
+      if (!error.sessionExpired) toast.error("Something went wrong!", "Error");
     }
   };
 

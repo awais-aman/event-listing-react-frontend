@@ -1,5 +1,4 @@
-import { useEffect } from "react";
-import { Route, Routes, Link, useNavigate } from "react-router-dom";
+import { Route, Routes, Link } from "react-router-dom";
 import { Navbar, Container, Nav } from "react-bootstrap";
 import EventDetails from "./components/EventDetails";
 import SignIn from "./components/SignIn";
@@ -9,19 +8,12 @@ import { useEvent } from "./context/EventContext";
 import SignOut from "./components/SignOut";
 import Footer from "./components/Footer";
 import Home from "./layouts/Home";
+import { GuestOnly, RequireAuth } from "./components/RequireAuth";
 import "./App.css";
 
 const App = () => {
-  const { state, dispatch } = useEvent();
+  const { state } = useEvent();
   const { isAuthenticated } = state;
-
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!isAuthenticated && isAuthenticated !== undefined && window.location.pathname !== "/signup") {
-      navigate('/login');
-    }
-  }, [isAuthenticated, navigate]);
 
   return (
     <>
@@ -34,9 +26,7 @@ const App = () => {
           <Navbar.Collapse id="basic-navbar-nav">
             <Nav className="ms-auto">
               {isAuthenticated ? (
-                <>
-                  <SignOut dispatch={dispatch} />
-                </>
+                <SignOut />
               ) : (
                 <>
                   <Nav.Link as={Link} to="/login" className="nav-link">
@@ -54,10 +44,10 @@ const App = () => {
 
       <div className="mt-5 pt-2 bg-light main-content">
         <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/events/:id" element={<EventDetails />} />
-          <Route path="/login" element={<SignIn />} />
-          <Route path="/signup" element={<SignUp />} />
+          <Route path="/" element={<RequireAuth><Home /></RequireAuth>} />
+          <Route path="/events/:id" element={<RequireAuth><EventDetails /></RequireAuth>} />
+          <Route path="/login" element={<GuestOnly><SignIn /></GuestOnly>} />
+          <Route path="/signup" element={<GuestOnly><SignUp /></GuestOnly>} />
         </Routes>
       </div>
       <Toaster />

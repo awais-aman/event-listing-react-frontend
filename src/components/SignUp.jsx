@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { Form, Button, Container, Row, Col } from "react-bootstrap";
 import { BsFillPersonFill, BsLockFill, BsEnvelopeFill } from "react-icons/bs";
-import axios from "../services/api";
-import { toast } from "../services/toast";
 import { useNavigate } from "react-router-dom";
+import { signup } from "../services/authService";
+import { describeApiError } from "../services/errors";
+import { toast } from "../services/toast";
 import styled from "styled-components";
 
 const StyledForm = styled(Form)`
@@ -13,6 +14,7 @@ const StyledForm = styled(Form)`
 `;
 const SignUp = () => {
   const navigate = useNavigate();
+  const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     user: {
       name: "",
@@ -40,29 +42,14 @@ const SignUp = () => {
       return;
     }
 
+    setSubmitting(true);
     try {
-      await axios.post("/signup", formData);
-      toast.success(
-        "Sign up successful. Redirecting to login page.",
-        "Success"
-      );
+      await signup(formData.user);
+      toast.success("Your account is ready. Please sign in.", "Signed up");
       navigate("/login");
     } catch (error) {
-      const errorMessages = error.response.data?.status || [];
-      const errorMessageList = (
-        <ul>
-          {errorMessages.map((errorMessage, index) => (
-            <li key={index}>{errorMessage}</li>
-          ))}
-        </ul>
-      );
-      toast.error(
-        <>
-          <p>Please try again.</p>
-          {errorMessageList}
-        </>,
-        "Error"
-      );
+      toast.error(describeApiError(error), "Sign up failed");
+      setSubmitting(false);
     }
   };
 
@@ -102,6 +89,7 @@ const SignUp = () => {
                 <Form.Control
                   type="email"
                   name="email"
+                  autoComplete="email"
                   value={formData.user.email}
                   onChange={handleChange}
                   required
@@ -120,6 +108,7 @@ const SignUp = () => {
                 <Form.Control
                   type="password"
                   name="password"
+                  autoComplete="new-password"
                   value={formData.user.password}
                   onChange={handleChange}
                   required
@@ -138,6 +127,7 @@ const SignUp = () => {
                 <Form.Control
                   type="password"
                   name="passwordConfirmation"
+                  autoComplete="new-password"
                   value={formData.user.passwordConfirmation}
                   onChange={handleChange}
                   required
@@ -146,8 +136,8 @@ const SignUp = () => {
             </Form.Group>
             <br />
             <div className="text-center">
-              <Button variant="primary" type="submit">
-                Sign Up
+              <Button variant="primary" type="submit" disabled={submitting}>
+                {submitting ? "Creating account..." : "Sign Up"}
               </Button>
             </div>
           </StyledForm>

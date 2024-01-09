@@ -48,8 +48,8 @@ const EventCard = ({ event, isMine=false, isJoined=false, actionType, events }) 
       await axios.delete(`/api/v1/events/${event.id}`);
       dispatch({ type: actionType, payload: events.filter((ev) => ev.id !== event.id) });
       toast.success("Event Deleted successfully", "Success");
-    } catch {
-      toast.error("Something went wrong!", "Error");
+    } catch (error) {
+      if (!error.sessionExpired) toast.error("Something went wrong!", "Error");
     }
   };
 
@@ -62,8 +62,8 @@ const EventCard = ({ event, isMine=false, isJoined=false, actionType, events }) 
       dispatch({ type: "JOINED_EVENTS", payload: [...joinedEvents, event] })
       setJoinModal(false);
       toast.success("Event joined successfully", "Success");
-    } catch {
-      toast.error("Something went wrong!", "Error");
+    } catch (error) {
+      if (!error.sessionExpired) toast.error("Something went wrong!", "Error");
     }
   };
 

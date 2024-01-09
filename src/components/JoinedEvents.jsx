@@ -14,8 +14,8 @@ const JoinedEvents = () => {
       try {
         const response = await axios.get("/api/v1/events/joined_events");
         dispatch({ type: "JOINED_EVENTS", payload: response.data });
-      } catch {
-        toast.error("Something went wrong!", "Error");
+      } catch (error) {
+        if (!error.sessionExpired) toast.error("Something went wrong!", "Error");
       }
     };
 

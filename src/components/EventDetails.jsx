@@ -54,8 +54,8 @@ const EventDetails = () => {
       try {
         const response = await axios.get(`/api/v1/events/${eventId}`);
         setEvent(response.data);
-      } catch {
-        toast.error("Something went wrong!", "Error");
+      } catch (error) {
+        if (!error.sessionExpired) toast.error("Something went wrong!", "Error");
       } finally {
         setLoading(false);
       }

@@ -16,8 +16,8 @@ const EventList = () => {
         if (response.data) {
           dispatch({ type: "MY_EVENTS", payload: response.data });
         }
-      } catch {
-        toast.error("Something went wrong!", "Error");
+      } catch (error) {
+        if (!error.sessionExpired) toast.error("Something went wrong!", "Error");
       }
     };
 

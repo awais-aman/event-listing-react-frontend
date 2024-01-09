@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { Form, Button, Container, Row, Col } from "react-bootstrap";
 import { BsFillPersonFill, BsLockFill } from "react-icons/bs";
-import axios from "../services/api";
-import { toast } from "../services/toast";
-import { useNavigate } from "react-router-dom";
-import { useEvent } from "../context/EventContext";
+import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
+import { useEvent } from "../context/EventContext";
+import { login } from "../services/authService";
+import { describeApiError } from "../services/errors";
+import { toast } from "../services/toast";
 
 const StyledForm = styled(Form)`
   background-color: #f8f9fa;
@@ -13,45 +14,35 @@ const StyledForm = styled(Form)`
   border-radius: 10px;
 `;
 
+const loginErrorMessage = (error) => {
+  if (error.response?.status === 401) return "Email or password is incorrect.";
+  if (error.response || error.request) return describeApiError(error);
+  return error.message;
+};
+
 const SignIn = () => {
   const navigate = useNavigate();
-  const { dispatch } = useEvent();
-  const [formData, setFormData] = useState({
-    user: {
-      email: "",
-      password: "",
-    },
-  });
+  const location = useLocation();
+  const { signIn } = useEvent();
+  const [credentials, setCredentials] = useState({ email: "", password: "" });
+  const [submitting, setSubmitting] = useState(false);
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      user: { ...formData.user, [e.target.name]: e.target.value },
-    });
+    setCredentials({ ...credentials, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitting(true);
 
     try {
-      const response = await axios.post("/login", formData);
-      const token = response.headers["authorization"];
-
-      dispatch({ type: "SIGN_IN", payload: { token } });
-
-      toast.success(
-        "Login successful. Redirecting to Events page.",
-        "Success"
-      );
-
-      setTimeout(() => {
-        navigate("/");
-      }, 0);
-    } catch {
-      toast.error(
-        "Login unsuccessful. \n Please try again.",
-        "Error"
-      );
+      const token = await login(credentials);
+      signIn(token);
+      toast.success("Welcome back.", "Signed in");
+      navigate(location.state?.from?.pathname ?? "/", { replace: true });
+    } catch (error) {
+      toast.error(loginErrorMessage(error), "Sign in failed");
+      setSubmitting(false);
     }
   };
 
@@ -71,9 +62,10 @@ const SignIn = () => {
                   </span>
                 </div>
                 <Form.Control
-                  type="text"
+                  type="email"
                   name="email"
-                  value={formData.email}
+                  autoComplete="email"
+                  value={credentials.email}
                   onChange={handleChange}
                   required
                 />
@@ -91,7 +83,8 @@ const SignIn = () => {
                 <Form.Control
                   type="password"
                   name="password"
-                  value={formData.password}
+                  autoComplete="current-password"
+                  value={credentials.password}
                   onChange={handleChange}
                   required
                 />
@@ -99,8 +92,8 @@ const SignIn = () => {
             </Form.Group>
             <br />
             <div className="text-center">
-              <Button variant="primary" type="submit">
-                Sign In
+              <Button variant="primary" type="submit" disabled={submitting}>
+                {submitting ? "Signing in..." : "Sign In"}
               </Button>
             </div>
           </StyledForm>

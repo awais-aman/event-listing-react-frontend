@@ -1,21 +1,15 @@
-import EventList from '../components/EventList';
+import EventList from "../components/EventList";
 import CreateEvent from "../components/CreateEvent";
-import JoinedEvents from '../components/JoinedEvents';
-import JoinEvent from '../components/JoinEvent';
-import { useEvent } from "../context/EventContext";
+import JoinedEvents from "../components/JoinedEvents";
+import JoinEvent from "../components/JoinEvent";
 
-const Home = () => {
-  const { state } = useEvent();
-  const { isAuthenticated } = state;
-  
-  return (
-    <>
-      {isAuthenticated && <EventList />}
-      {isAuthenticated && <CreateEvent />}
-      {isAuthenticated && <JoinedEvents />}
-      {isAuthenticated && <JoinEvent />}
-    </>
-  );
-};
+const Home = () => (
+  <>
+    <EventList />
+    <CreateEvent />
+    <JoinedEvents />
+    <JoinEvent />
+  </>
+);
 
 export default Home;

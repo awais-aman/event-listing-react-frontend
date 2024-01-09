@@ -1,27 +1,23 @@
+import { Nav } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
+import { useEvent } from "../context/EventContext";
 import { logout } from "../services/authService";
 import { toast } from "../services/toast";
-import { Nav } from "react-bootstrap";
-import { Link, useNavigate } from "react-router-dom";
 
-export default function SignOut({ dispatch }) {
+export default function SignOut() {
   const navigate = useNavigate();
+  const { signOut } = useEvent();
 
   const handleSignOut = async () => {
-    const token = localStorage.getItem("token");
-    const success = await logout(token);
-
-    if (success) {
-      dispatch({ type: "SIGN_OUT" });
-      toast.success("Signout successful.", "Success", 3000);
-      navigate("/login");
-    }
+    await logout();
+    signOut();
+    toast.success("You have been signed out.", "Signed out", 3000);
+    navigate("/login");
   };
 
   return (
-    <div>
-      <Nav.Link as={Link} to={"/"} onClick={handleSignOut}>
-        Sign Out
-      </Nav.Link>
-    </div>
+    <Nav.Link as="button" type="button" onClick={handleSignOut}>
+      Sign Out
+    </Nav.Link>
   );
 }
