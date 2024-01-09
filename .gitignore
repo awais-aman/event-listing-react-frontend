@@ -1,0 +1,34 @@
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+project_venv/
+
+# testing
+/coverage
+
+# production
+/build
+/dist
+
+# environment
+.env
+.env.*
+!.env.example
+
+# caches, logs, scratch
+.cache/
+.eslintcache
+.vite/
+tmp/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# misc
+.DS_Store
+.github/
+
+# Local Netlify folder
+.netlify

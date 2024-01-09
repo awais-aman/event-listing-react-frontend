@@ -1,0 +1,91 @@
+.col-heading {
+  color: #ffffff;
+  display: block;
+  border-bottom: 1px solid #ffffff52;
+  margin-bottom: 1.7rem;
+}
+
+.links-container li {
+  margin-top: 1rem;
+}
+
+.links-container li a {
+  text-decoration: none !important;
+  transition: all 0.3s;
+}
+
+.btn-footer-top {
+  background-color: transparent;
+  border: none;
+}
+
+.btn-up:hover path,
+.btn-up:focus path {
+  stroke-width: 15;
+}
+
+.btn-up:hover rect,
+.btn-up:focus rect {
+  fill: #71966d;
+}
+
+.btn-up:active path {
+  stroke-width: 15;
+  transition: all 100ms ease-in-out;
+}
+
+.my-events-container {
+  padding: 20px;
+  background-color: #dce6f0a8;
+  box-shadow: 0px 1px 20px 9px #6c757d38;
+}
+
+.joined-events-container {
+  padding: 20px;
+  background-color: #dcf0dda8;
+  box-shadow: 0px 1px 20px 9px #6c757d38;
+}
+
+.join-event-container {
+  padding: 20px;
+  background-color: #d4d7f3b5;
+}
+
+.card {
+  box-shadow: -8px 7px 7px 2px #6c757d38;
+  cursor: pointer;
+}
+
+.card:hover {
+  transform: scale(1.05);
+  transition: all 200ms ease-in-out;
+}
+
+.delete-event {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-color: red;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 25px;
+  line-height: 25px;
+  font-weight: 800;
+  color: white;
+  transform: rotate(45deg);
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  flex: 1;
+  display: grid;
+}
