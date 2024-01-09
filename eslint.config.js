@@ -12,7 +12,7 @@ export default [
   reactHooks.configs.flat.recommended,
   jsxA11y.flatConfigs.recommended,
   {
-    files: ["**/*.{js,jsx}"],
+    files: ["**/*.{js,jsx,mjs}"],
     languageOptions: {
       ecmaVersion: "latest",
       sourceType: "module",
@@ -24,7 +24,12 @@ export default [
     },
   },
   {
-    files: ["vite.config.js", "eslint.config.js", "scripts/**/*.js"],
+    files: ["vite.config.js", "eslint.config.js"],
     languageOptions: { globals: globals.node },
+  },
+  {
+    // Playwright scripts: Node, plus callbacks that run inside the page.
+    files: ["scripts/**/*.mjs"],
+    languageOptions: { globals: { ...globals.node, ...globals.browser } },
   },
 ];

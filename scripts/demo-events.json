@@ -1,0 +1,16 @@
+{
+  "mine": [
+    { "id": 11, "name": "Riverside Book Swap", "description": "Bring two paperbacks, leave with two new ones. Tea and biscuits on the reading room table.", "date": "2027-03-14T17:30:00.000Z", "location": "Old Mill Library", "organizer_id": 1 },
+    { "id": 12, "name": "Repair Café", "description": "Volunteers fix lamps, toasters and bike brakes while you watch and learn.", "date": "2027-03-27T10:00:00.000Z", "location": "St Anne's Hall", "organizer_id": 1 },
+    { "id": 13, "name": "Spring Seed Exchange", "description": "Swap saved seeds and seedlings. Labels and envelopes provided.", "date": "2027-04-10T13:00:00.000Z", "location": "Elm Street Allotments", "organizer_id": 1 }
+  ],
+  "joined": [
+    { "id": 21, "name": "Saturday Trail Run", "description": "An easy 8 km loop around the reservoir with a coffee stop at the end. All paces welcome; the back marker waits for everyone.", "date": "2027-04-03T08:00:00.000Z", "location": "North Gate, Hill Park", "organizer_id": 2 },
+    { "id": 22, "name": "Lantern Making Workshop", "description": "Willow and tissue lanterns for the winter parade. Suitable for ages 8 and up.", "date": "2027-11-20T14:00:00.000Z", "location": "Quayside Arts Centre", "organizer_id": 3 }
+  ],
+  "joinable": [
+    { "id": 31, "name": "Community Garden Workday", "description": "Planting the spring beds. Gloves and tools provided, lunch from the garden kitchen.", "date": "2027-04-17T09:00:00.000Z", "location": "Elm Street Allotments", "organizer_id": 4 },
+    { "id": 32, "name": "Night Market Volunteers", "description": "Help set up stalls and lights for the first night market of the season.", "date": "2027-05-01T16:00:00.000Z", "location": "Dock 5 Car Park", "organizer_id": 5 },
+    { "id": 33, "name": "Choir Open Rehearsal", "description": "Drop in and sing along; no auditions and no need to read music.", "date": "2027-05-06T19:00:00.000Z", "location": "Chapel Lane Hall", "organizer_id": 6 }
+  ]
+}
