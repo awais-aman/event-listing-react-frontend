@@ -1,4 +1,3 @@
-import React from "react";
 import EventList from '../components/EventList';
 import CreateEvent from "../components/CreateEvent";
 import JoinedEvents from '../components/JoinedEvents';

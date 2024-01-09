@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Form, Button, Row, Col } from "react-bootstrap";
 import { BsCalendar, BsGeoAlt, BsPerson } from "react-icons/bs";
 import DatePicker from "react-datepicker";
 import axios from "../services/api";
 import styled from "styled-components";
-import { NotificationManager } from "react-notifications";
+import { toast } from "../services/toast";
 import { useEvent } from "../context/EventContext";
 import "react-datepicker/dist/react-datepicker.css";
 
@@ -69,10 +69,10 @@ const EventForm = ({
         const response = await axios.post("/api/v1/events", formData);
         dispatch({ type: "MY_EVENTS", payload: [...events, response.data]});
       }
-      NotificationManager.success(`Event is ${isEdit ? "updated" : "created"} successfully!`, "Success");
+      toast.success(`Event is ${isEdit ? "updated" : "created"} successfully!`, "Success");
       onClose();
-    } catch (error) {
-      NotificationManager.error("Something went wrong!", "Error");
+    } catch {
+      toast.error("Something went wrong!", "Error");
     }
   };
 

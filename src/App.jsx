@@ -1,10 +1,10 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { Route, Routes, Link, useNavigate } from "react-router-dom";
 import { Navbar, Container, Nav } from "react-bootstrap";
 import EventDetails from "./components/EventDetails";
 import SignIn from "./components/SignIn";
 import SignUp from "./components/SignUp";
-import { NotificationContainer } from "react-notifications";
+import Toaster from "./components/Toaster";
 import { useEvent } from "./context/EventContext";
 import SignOut from "./components/SignOut";
 import Footer from "./components/Footer";
@@ -60,7 +60,7 @@ const App = () => {
           <Route path="/signup" element={<SignUp />} />
         </Routes>
       </div>
-      <NotificationContainer />
+      <Toaster />
       <Footer />
     </>
   );

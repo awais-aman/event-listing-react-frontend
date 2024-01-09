@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import axios from "../services/api";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -8,7 +8,7 @@ import {
   faAlignLeft,
 } from "@fortawesome/free-solid-svg-icons";
 import { Container } from "react-bootstrap";
-import { NotificationManager } from "react-notifications";
+import { toast } from "../services/toast";
 
 const EventDetailsContainer = styled.div`
   background: linear-gradient(to right, #3494e6, #ec6ead);
@@ -54,8 +54,8 @@ const EventDetails = () => {
       try {
         const response = await axios.get(`/api/v1/events/${eventId}`);
         setEvent(response.data);
-      } catch (error) {
-        NotificationManager.error("Something went wrong!", "Error");
+      } catch {
+        toast.error("Something went wrong!", "Error");
       } finally {
         setLoading(false);
       }

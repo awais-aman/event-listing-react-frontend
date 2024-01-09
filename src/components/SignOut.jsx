@@ -1,6 +1,5 @@
-import React from "react";
 import { logout } from "../services/authService";
-import { NotificationManager } from "react-notifications";
+import { toast } from "../services/toast";
 import { Nav } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -13,7 +12,7 @@ export default function SignOut({ dispatch }) {
 
     if (success) {
       dispatch({ type: "SIGN_OUT" });
-      NotificationManager.success("Signout successful.", "Success", 3000);
+      toast.success("Signout successful.", "Success", 3000);
       navigate("/login");
     }
   };

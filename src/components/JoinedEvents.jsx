@@ -1,26 +1,21 @@
-import React, { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Row, Container } from "react-bootstrap";
 import axios from "../services/api";
 import EventCard from "./EventCard";
 import { EventHeading } from "./EventHeading";
 import { useEvent } from "../context/EventContext";
-import { NotificationManager } from "react-notifications";
+import { toast } from "../services/toast";
 
 const JoinedEvents = () => {
-  const { state: { joinedEvents }, dispatch } = useEvent();
-  const [events, setEvents] = useState([]);
-
-  useEffect(() => {
-    if (joinedEvents) setEvents(joinedEvents);
-  }, [joinedEvents]);
+  const { state: { joinedEvents: events }, dispatch } = useEvent();
 
   useEffect(() => {
     const fetchEvents = async () => {
       try {
         const response = await axios.get("/api/v1/events/joined_events");
         dispatch({ type: "JOINED_EVENTS", payload: response.data });
-      } catch (error) {
-        NotificationManager.error("Something went wrong!", "Error");
+      } catch {
+        toast.error("Something went wrong!", "Error");
       }
     };
 

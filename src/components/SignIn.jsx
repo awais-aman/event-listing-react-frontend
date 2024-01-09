@@ -1,9 +1,8 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Form, Button, Container, Row, Col } from "react-bootstrap";
 import { BsFillPersonFill, BsLockFill } from "react-icons/bs";
 import axios from "../services/api";
-import { NotificationManager } from "react-notifications";
-import "react-notifications/lib/notifications.css";
+import { toast } from "../services/toast";
 import { useNavigate } from "react-router-dom";
 import { useEvent } from "../context/EventContext";
 import styled from "styled-components";
@@ -40,7 +39,7 @@ const SignIn = () => {
 
       dispatch({ type: "SIGN_IN", payload: { token } });
 
-      NotificationManager.success(
+      toast.success(
         "Login successful. Redirecting to Events page.",
         "Success"
       );
@@ -48,8 +47,8 @@ const SignIn = () => {
       setTimeout(() => {
         navigate("/");
       }, 0);
-    } catch (error) {
-      NotificationManager.error(
+    } catch {
+      toast.error(
         "Login unsuccessful. \n Please try again.",
         "Error"
       );

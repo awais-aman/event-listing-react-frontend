@@ -8,7 +8,7 @@ const logout = async (token) => {
       },
     });
     return true;
-  } catch (error) {
+  } catch {
     return false;
   }
 };

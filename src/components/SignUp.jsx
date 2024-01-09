@@ -1,9 +1,8 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Form, Button, Container, Row, Col } from "react-bootstrap";
 import { BsFillPersonFill, BsLockFill, BsEnvelopeFill } from "react-icons/bs";
 import axios from "../services/api";
-import { NotificationManager } from "react-notifications";
-import "react-notifications/lib/notifications.css";
+import { toast } from "../services/toast";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
@@ -34,7 +33,7 @@ const SignUp = () => {
     e.preventDefault();
 
     if (formData.user.password !== formData.user.passwordConfirmation) {
-      NotificationManager.error(
+      toast.error(
         "Password and Confirm Password do not match.",
         "Error"
       );
@@ -43,7 +42,7 @@ const SignUp = () => {
 
     try {
       await axios.post("/signup", formData);
-      NotificationManager.success(
+      toast.success(
         "Sign up successful. Redirecting to login page.",
         "Success"
       );
@@ -57,7 +56,7 @@ const SignUp = () => {
           ))}
         </ul>
       );
-      NotificationManager.error(
+      toast.error(
         <>
           <p>Please try again.</p>
           {errorMessageList}

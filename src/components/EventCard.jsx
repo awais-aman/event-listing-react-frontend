@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Button, Card, Col, Modal } from "react-bootstrap";
 import axios from "../services/api";
 import EventForm from './EventForm';
 import eventImg from "../assets/images/event1.avif";
 import { useEvent } from "../context/EventContext";
-import { NotificationManager } from "react-notifications";
+import { toast } from "../services/toast";
 
 const EventCard = ({ event, isMine=false, isJoined=false, actionType, events }) => {
   const [showModal, setShowModal] = useState(false);
@@ -47,9 +47,9 @@ const EventCard = ({ event, isMine=false, isJoined=false, actionType, events }) 
     try {
       await axios.delete(`/api/v1/events/${event.id}`);
       dispatch({ type: actionType, payload: events.filter((ev) => ev.id !== event.id) });
-      NotificationManager.success("Event Deleted successfully", "Success");
-    } catch (error) {
-      NotificationManager.error("Something went wrong!", "Error");
+      toast.success("Event Deleted successfully", "Success");
+    } catch {
+      toast.error("Something went wrong!", "Error");
     }
   };
 
@@ -61,9 +61,9 @@ const EventCard = ({ event, isMine=false, isJoined=false, actionType, events }) 
       dispatch({ type: actionType, payload: events.filter((ev) => ev.id !== event.id) });
       dispatch({ type: "JOINED_EVENTS", payload: [...joinedEvents, event] })
       setJoinModal(false);
-      NotificationManager.success("Event joined successfully", "Success");
-    } catch (error) {
-      NotificationManager.error("Something went wrong!", "Error");
+      toast.success("Event joined successfully", "Success");
+    } catch {
+      toast.error("Something went wrong!", "Error");
     }
   };
 
