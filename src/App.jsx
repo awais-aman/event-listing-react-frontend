@@ -1,4 +1,4 @@
-import { Route, Routes, Link } from "react-router-dom";
+import { Route, Routes, Link, NavLink } from "react-router-dom";
 import { Navbar, Container, Nav } from "react-bootstrap";
 import EventDetails from "./components/EventDetails";
 import SignIn from "./components/SignIn";
@@ -17,22 +17,26 @@ const App = () => {
 
   return (
     <>
-      <Navbar bg="dark" variant="dark" expand="lg" fixed="top">
+      <a className="skip-link" href="#main">
+        Skip to content
+      </a>
+      <Navbar expand="md" sticky="top" className="site-nav" variant="dark" aria-label="Main">
         <Container>
           <Navbar.Brand as={Link} to="/">
-            <span style={{ color: "#007bff" }}>Event</span> App
+            <span className="brand__mark" aria-hidden="true">EL</span>
+            Event Listing
           </Navbar.Brand>
-          <Navbar.Toggle aria-controls="basic-navbar-nav" />
-          <Navbar.Collapse id="basic-navbar-nav">
+          <Navbar.Toggle aria-controls="site-nav-links" />
+          <Navbar.Collapse id="site-nav-links">
             <Nav className="ms-auto">
               {isAuthenticated ? (
                 <SignOut />
               ) : (
                 <>
-                  <Nav.Link as={Link} to="/login" className="nav-link">
+                  <Nav.Link as={NavLink} to="/login">
                     Sign In
                   </Nav.Link>
-                  <Nav.Link as={Link} to="/signup" className="nav-link">
+                  <Nav.Link as={NavLink} to="/signup">
                     Sign Up
                   </Nav.Link>
                 </>
@@ -42,14 +46,14 @@ const App = () => {
         </Container>
       </Navbar>
 
-      <div className="mt-5 pt-2 bg-light main-content">
+      <main id="main" className="main-content" tabIndex={-1}>
         <Routes>
           <Route path="/" element={<RequireAuth><Home /></RequireAuth>} />
           <Route path="/events/:id" element={<RequireAuth><EventDetails /></RequireAuth>} />
           <Route path="/login" element={<GuestOnly><SignIn /></GuestOnly>} />
           <Route path="/signup" element={<GuestOnly><SignUp /></GuestOnly>} />
         </Routes>
-      </div>
+      </main>
       <Toaster />
       <Footer />
     </>

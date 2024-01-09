@@ -1,67 +1,53 @@
 import { useState } from "react";
 import { Form, Button, Row, Col } from "react-bootstrap";
-import { BsCalendar, BsGeoAlt, BsPerson } from "react-icons/bs";
-import DatePicker from "react-datepicker";
+import { BsCalendarEvent, BsGeoAlt, BsTag, BsTextParagraph } from "react-icons/bs";
 import api from "../services/api";
-import styled from "styled-components";
 import { describeApiError } from "../services/errors";
 import { toast } from "../services/toast";
 import { useEvent } from "../context/EventContext";
-import "react-datepicker/dist/react-datepicker.css";
+import { nextFullHour, toLocalInput } from "../utils/dates";
 
-const StyledForm = styled(Form)`
-  background-color: #f8f9fa;
-  padding: 20px;
-  border-radius: 10px;
-`;
+const blankEvent = { name: "", description: "", location: "" };
 
-const EventForm = ({
-  onClose,
-  event={
-    name: "",
-    description: "",
-    date: new Date(),
-    location: "",
-  },
-}) => {
+const EventForm = ({ onClose, event = blankEvent, startEditing = false }) => {
   const { dispatch } = useEvent();
-  const isEdit = !!event.id;
+  const isEdit = Boolean(event.id);
 
-  const [formData, setFormData] = useState({
-    event: {
-      name: event.name,
-      description: event.description,
-      date: new Date(event.date),
-      location: event.location,
-    },
+  const [fields, setFields] = useState({
+    name: event.name,
+    description: event.description,
+    date: toLocalInput(event.date ?? nextFullHour()),
+    location: event.location,
   });
-  const [canEdit, setCanEdit] = useState(false);
+  const [canEdit, setCanEdit] = useState(!isEdit || startEditing);
   const [submitting, setSubmitting] = useState(false);
+  const readOnly = !canEdit;
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      event: { ...formData.event, [e.target.name]: e.target.value },
-    });
+    setFields({ ...fields, [e.target.name]: e.target.value });
   };
 
-  const handleDateChange = (date) => {
-    setFormData({
-      ...formData,
-      event: { ...formData.event, date },
+  const handleCancelEdit = () => {
+    setFields({
+      name: event.name,
+      description: event.description,
+      date: toLocalInput(event.date),
+      location: event.location,
     });
+    setCanEdit(false);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const payload = { event: { ...fields, date: new Date(fields.date).toISOString() } };
 
     setSubmitting(true);
     try {
       if (isEdit) {
-        const response = await api.patch(`/api/v1/events/${event.id}`, formData);
+        const response = await api.patch(`/api/v1/events/${event.id}`, payload);
         dispatch({ type: "UPDATED", key: "mine", event: response.data });
       } else {
-        const response = await api.post("/api/v1/events", formData);
+        const response = await api.post("/api/v1/events", payload);
         dispatch({ type: "ADDED", key: "mine", event: response.data });
       }
       toast.success(`Event ${isEdit ? "updated" : "created"}.`, "Success");
@@ -73,20 +59,21 @@ const EventForm = ({
   };
 
   return (
-    <StyledForm onSubmit={handleSubmit}>
-      <Row className="mb-3">
+    <Form className="event-form" onSubmit={handleSubmit}>
+      <Row className="mb-3 gy-3">
         <Col md={6}>
           <Form.Group controlId="formName">
             <Form.Label>
-              <BsPerson className="mr-2" /> Event Name
+              <BsTag aria-hidden="true" />
+              Event name
             </Form.Label>
             <Form.Control
               type="text"
               name="name"
-              value={formData.event.name}
+              value={fields.name}
               onChange={handleChange}
-              placeholder="Enter the event name"
-              disabled={isEdit && !canEdit}
+              placeholder="Riverside book swap"
+              disabled={readOnly}
               required
             />
           </Form.Group>
@@ -94,14 +81,16 @@ const EventForm = ({
         <Col md={6}>
           <Form.Group controlId="formDate">
             <Form.Label>
-              <BsCalendar className="mr-2" /> Date
+              <BsCalendarEvent aria-hidden="true" />
+              Date and time
             </Form.Label>
-            <DatePicker
-              selected={formData.event.date}
-              onChange={handleDateChange}
-              dateFormat="MMMM d, yyyy"
-              className="form-control"
-              disabled={isEdit && !canEdit}
+            <Form.Control
+              type="datetime-local"
+              name="date"
+              value={fields.date}
+              onChange={handleChange}
+              disabled={readOnly}
+              required
             />
           </Form.Group>
         </Col>
@@ -109,62 +98,55 @@ const EventForm = ({
 
       <Form.Group controlId="formDescription" className="mb-3">
         <Form.Label>
-          <BsGeoAlt className="mr-2" /> Description
+          <BsTextParagraph aria-hidden="true" />
+          Description
         </Form.Label>
         <Form.Control
           as="textarea"
           rows={3}
           name="description"
-          value={formData.event.description}
+          value={fields.description}
           onChange={handleChange}
-          placeholder="Enter a brief description of the event"
-          disabled={isEdit && !canEdit}
+          placeholder="What should people expect?"
+          disabled={readOnly}
           required
         />
       </Form.Group>
 
-      <Row className="mb-3">
-        <Col md={6}>
-          <Form.Group controlId="formLocation">
-            <Form.Label>
-              <BsGeoAlt className="mr-2" /> Location
-            </Form.Label>
-            <Form.Control
-              type="text"
-              name="location"
-              value={formData.event.location}
-              onChange={handleChange}
-              placeholder="Enter the event location"
-              disabled={isEdit && !canEdit}
-              required
-            />
-          </Form.Group>
-        </Col>
-      </Row>
+      <Form.Group controlId="formLocation" className="mb-4">
+        <Form.Label>
+          <BsGeoAlt aria-hidden="true" />
+          Location
+        </Form.Label>
+        <Form.Control
+          type="text"
+          name="location"
+          value={fields.location}
+          onChange={handleChange}
+          placeholder="Venue or address"
+          disabled={readOnly}
+          required
+        />
+      </Form.Group>
 
-      <div className="w-100 text-end">
-        {
-          isEdit && (
-            canEdit ? (
-              <Button variant="light" className="b-1 border-secondary text-secondary" onClick={() => setCanEdit(false)}>
-                Cancel
-              </Button>
-            ) : (
-              <Button variant="primary" onClick={() => setCanEdit(true)}>
-                Edit
-              </Button>
-            )
-          )
-        }
-        {
-          (!isEdit || (isEdit && canEdit)) && (
-            <Button variant="primary" type="submit" className="ms-3" disabled={submitting}>
-              {isEdit ? "Update" : "Create"} Event
+      <div className="d-flex justify-content-end gap-2">
+        {isEdit &&
+          (canEdit ? (
+            <Button variant="outline-dark" onClick={handleCancelEdit}>
+              Cancel
             </Button>
-          )
-        }
+          ) : (
+            <Button variant="primary" onClick={() => setCanEdit(true)}>
+              Edit
+            </Button>
+          ))}
+        {canEdit && (
+          <Button variant="primary" type="submit" disabled={submitting}>
+            {isEdit ? "Update" : "Create"} Event
+          </Button>
+        )}
       </div>
-    </StyledForm>
+    </Form>
   );
 };
 

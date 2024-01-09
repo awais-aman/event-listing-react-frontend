@@ -1,46 +1,32 @@
 import { useState } from "react";
-import { Button, Card, Col, Modal } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
+import { Button, Col, Modal } from "react-bootstrap";
+import { Link } from "react-router-dom";
 import api from "../services/api";
 import EventForm from "./EventForm";
-import eventImg from "../assets/images/event1.avif";
 import { useEvent } from "../context/EventContext";
 import { describeApiError } from "../services/errors";
 import { toast } from "../services/toast";
+import { formatLongDate, formatTime, stubParts } from "../utils/dates";
 
 const EventCard = ({ event, collection }) => {
-  const navigate = useNavigate();
   const { dispatch } = useEvent();
   const [showModal, setShowModal] = useState(false);
+  const [startEditing, setStartEditing] = useState(false);
   const [deleteModal, setDeleteModal] = useState(false);
   const [joinModal, setJoinModal] = useState(false);
   const [pending, setPending] = useState(false);
 
   const isMine = collection === "mine";
   const canJoin = collection === "joinable";
+  const { month, day } = stubParts(event.date);
+
+  const openForm = (editing) => {
+    setStartEditing(editing);
+    setShowModal(true);
+  };
 
   const reportFailure = (error) => {
     if (!error.sessionExpired) toast.error(describeApiError(error), "Error");
-  };
-
-  const showJoinModal = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setJoinModal(true);
-  };
-
-  const showDeleteModal = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDeleteModal(true);
-  };
-
-  const handleCardClick = () => {
-    if (isMine) {
-      setShowModal(true);
-    } else {
-      navigate(`/events/${event.id}`);
-    }
   };
 
   const handleDelete = async () => {
@@ -78,52 +64,112 @@ const EventCard = ({ event, collection }) => {
     <>
       <Modal show={showModal} onHide={() => setShowModal(false)}>
         <Modal.Header closeButton>
-          <Modal.Title>Edit Event</Modal.Title>
+          <Modal.Title>Your event</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <EventForm onClose={() => setShowModal(false)} event={event} />
+          <EventForm onClose={() => setShowModal(false)} event={event} startEditing={startEditing} />
         </Modal.Body>
       </Modal>
       <Modal show={deleteModal} onHide={() => setDeleteModal(false)}>
-        <Modal.Header>
-          <Modal.Title>Delete this event permanently?</Modal.Title>
+        <Modal.Header closeButton>
+          <Modal.Title>Delete this event?</Modal.Title>
         </Modal.Header>
-        <Modal.Body className="text-end">
-          <Button className="b-1 border-secondary text-secondary me-3" variant="light" onClick={() => setDeleteModal(false)}>Cancel</Button>
-          <Button variant="danger" onClick={handleDelete} disabled={pending}>Delete</Button>
+        <Modal.Body>
+          <p>
+            <strong>{event.name}</strong> will be removed for everyone who joined it. This cannot be
+            undone.
+          </p>
+          <div className="text-end">
+            <Button variant="outline-dark" className="me-2" onClick={() => setDeleteModal(false)}>
+              Cancel
+            </Button>
+            <Button variant="danger" onClick={handleDelete} disabled={pending}>
+              Delete
+            </Button>
+          </div>
         </Modal.Body>
       </Modal>
       <Modal show={joinModal} onHide={() => setJoinModal(false)}>
-        <Modal.Header>
+        <Modal.Header closeButton>
           <Modal.Title>Join this event?</Modal.Title>
         </Modal.Header>
-        <Modal.Body className="text-end">
-          <Button className="b-1 border-secondary text-secondary me-3" variant="light" onClick={() => setJoinModal(false)}>Cancel</Button>
-          <Button variant="primary" onClick={handleJoin} disabled={pending}>Join</Button>
+        <Modal.Body>
+          <p>
+            <strong>{event.name}</strong>, {formatLongDate(event.date)} at {event.location}.
+          </p>
+          <div className="text-end">
+            <Button variant="outline-dark" className="me-2" onClick={() => setJoinModal(false)}>
+              Cancel
+            </Button>
+            <Button variant="primary" onClick={handleJoin} disabled={pending}>
+              Join
+            </Button>
+          </div>
         </Modal.Body>
       </Modal>
-      <Col xs={12} sm={6} md={4} lg={3} className="mt-4">
-        <Card className="w-100 position-relative h-100" onClick={handleCardClick}>
-          {
-            isMine && (
-              <div className="delete-event" onClick={showDeleteModal}>
-                +
+      <Col xs={12} md={6} xl={4} className="mt-4">
+        <article className={`event-card event-card--${collection}`}>
+          <div className="event-card__stub" aria-hidden="true">
+            <span className="event-card__month">{month}</span>
+            <span className="event-card__day">{day}</span>
+          </div>
+          <div className="event-card__body">
+            <h3 className="event-card__title">
+              {isMine ? (
+                <button type="button" className="event-card__link" onClick={() => openForm(false)}>
+                  {event.name}
+                </button>
+              ) : (
+                <Link className="event-card__link" to={`/events/${event.id}`}>
+                  {event.name}
+                </Link>
+              )}
+            </h3>
+            <p className="event-card__meta">
+              <time dateTime={event.date}>
+                {formatLongDate(event.date)}, {formatTime(event.date)}
+              </time>
+              <br />
+              {event.location}
+            </p>
+            <p className="event-card__desc">{event.description}</p>
+            {(isMine || canJoin) && (
+              <div className="event-card__actions">
+                {isMine && (
+                  <Button
+                    variant="outline-dark"
+                    size="sm"
+                    aria-label={`Edit ${event.name}`}
+                    onClick={() => openForm(true)}
+                  >
+                    Edit
+                  </Button>
+                )}
+                {isMine && (
+                  <Button
+                    variant="link"
+                    size="sm"
+                    className="btn-delete"
+                    aria-label={`Delete ${event.name}`}
+                    onClick={() => setDeleteModal(true)}
+                  >
+                    Delete
+                  </Button>
+                )}
+                {canJoin && (
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    aria-label={`Join ${event.name}`}
+                    onClick={() => setJoinModal(true)}
+                  >
+                    Join
+                  </Button>
+                )}
               </div>
-            )
-          }
-          <Card.Img variant="top" src={eventImg} />
-          <Card.Body>
-            <Card.Title>{event.name}</Card.Title>
-            <Card.Text>{event.description}</Card.Text>
-          {
-            canJoin && (
-              <button className="btn btn-large btn-warning w-100 mt-auto" onClick={showJoinModal}>
-                Join
-              </button>
-            )
-          }
-          </Card.Body>
-        </Card>
+            )}
+          </div>
+        </article>
       </Col>
     </>
   );

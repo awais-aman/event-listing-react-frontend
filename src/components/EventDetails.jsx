@@ -1,48 +1,10 @@
 import { useEffect, useState } from "react";
 import { Alert, Button, Container, Spinner } from "react-bootstrap";
+import { BsCalendarEvent, BsClock, BsGeoAlt } from "react-icons/bs";
 import { Link, useParams } from "react-router-dom";
-import styled from "styled-components";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faCalendarAlt,
-  faMapMarkerAlt,
-  faAlignLeft,
-} from "@fortawesome/free-solid-svg-icons";
 import api from "../services/api";
 import { describeApiError } from "../services/errors";
-
-const EventDetailsContainer = styled.div`
-  background: linear-gradient(to right, #3494e6, #ec6ead);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  color: #fff;
-  text-align: center;
-  padding: 40px 0px;
-  width: 100%;
-  display: flex;
-`;
-
-const EventTitle = styled.h2`
-  font-size: 32px;
-  margin-bottom: 20px;
-`;
-
-const EventDescription = styled.p`
-  font-size: 18px;
-  margin-bottom: 15px;
-  line-height: 1.5;
-`;
-
-const EventDetail = styled.p`
-  font-size: 20px;
-  margin-bottom: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
-
-const Icon = styled.span`
-  margin-right: 10px;
-`;
+import { formatLongDate, formatTime } from "../utils/dates";
 
 const EventDetails = () => {
   const { id } = useParams();
@@ -73,55 +35,49 @@ const EventDetails = () => {
   };
 
   return (
-    <EventDetailsContainer>
-      <Container className="my-auto">
+    <div className="event-detail">
+      <Container>
+        <Link to="/">&larr; Back to events</Link>
         {loading ? (
-          <Spinner animation="border" role="status">
-            <span className="visually-hidden">Loading event</span>
-          </Spinner>
+          <div className="text-center mt-5">
+            <Spinner animation="border" role="status">
+              <span className="visually-hidden">Loading event</span>
+            </Spinner>
+          </div>
         ) : event ? (
-          <>
-            <EventTitle>{event.name}</EventTitle>
-            <EventDescription>
-              <Icon>
-                <FontAwesomeIcon icon={faAlignLeft} />
-              </Icon>
-              {event.description}
-            </EventDescription>
-            <EventDetail>
-              <Icon>
-                <FontAwesomeIcon icon={faCalendarAlt} />
-              </Icon>
-              {new Date(event.date).toLocaleDateString("en-US", {
-                month: "long",
-                day: "numeric",
-                year: "numeric",
-              })}
-            </EventDetail>
-            <EventDetail>
-              <Icon>
-                <FontAwesomeIcon icon={faMapMarkerAlt} />
-              </Icon>
-              {event.location}
-            </EventDetail>
-          </>
+          <article className="event-detail__poster">
+            <h1 className="event-detail__title">{event.name}</h1>
+            <dl className="event-detail__facts">
+              <dt>
+                <BsCalendarEvent aria-hidden="true" /> Date
+              </dt>
+              <dd>{formatLongDate(event.date)}</dd>
+              <dt>
+                <BsClock aria-hidden="true" /> Time
+              </dt>
+              <dd>{formatTime(event.date)}</dd>
+              <dt>
+                <BsGeoAlt aria-hidden="true" /> Where
+              </dt>
+              <dd>{event.location}</dd>
+            </dl>
+            <p className="event-detail__description">{event.description}</p>
+          </article>
         ) : error === "notFound" ? (
-          <p>Event not found</p>
+          <div className="event-detail__poster">
+            <h1 className="event-detail__title">Event not found</h1>
+            <p>It may have been deleted by its organiser.</p>
+          </div>
         ) : (
-          <Alert variant="light">
+          <Alert variant="danger" className="mt-4">
             <p>{error}</p>
-            <Button variant="outline-dark" size="sm" onClick={retry}>
+            <Button variant="outline-danger" size="sm" onClick={retry}>
               Try again
             </Button>
           </Alert>
         )}
-        <p className="mt-4">
-          <Link to="/" className="text-white">
-            Back to events
-          </Link>
-        </p>
       </Container>
-    </EventDetailsContainer>
+    </div>
   );
 };
 

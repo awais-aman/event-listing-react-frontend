@@ -86,13 +86,14 @@ describe("managing events", () => {
 
     await user.click(screen.getByRole("button", { name: "Create an event" }));
     const dialog = await screen.findByRole("dialog");
-    await user.type(within(dialog).getByLabelText(/Event Name/), "Harbour Cleanup");
+    await user.type(within(dialog).getByLabelText(/Event name/), "Harbour Cleanup");
     await user.type(within(dialog).getByLabelText(/Description/), "Litter pick along the quay.");
     await user.type(within(dialog).getByLabelText(/Location/), "South Quay");
     await user.click(within(dialog).getByRole("button", { name: "Create Event" }));
 
     expect(await within(section("My Events")).findByText("Harbour Cleanup")).toBeInTheDocument();
     expect(body.event).toMatchObject({ name: "Harbour Cleanup", location: "South Quay" });
+    expect(new Date(body.event.date).toISOString()).toBe(body.event.date);
   });
 
   it("explains field validation failures and keeps the form open", async () => {
@@ -106,7 +107,7 @@ describe("managing events", () => {
 
     await user.click(screen.getByRole("button", { name: "Create an event" }));
     const dialog = await screen.findByRole("dialog");
-    await user.type(within(dialog).getByLabelText(/Event Name/), "Late Event");
+    await user.type(within(dialog).getByLabelText(/Event name/), "Late Event");
     await user.type(within(dialog).getByLabelText(/Description/), "Too late.");
     await user.type(within(dialog).getByLabelText(/Location/), "Nowhere");
     await user.click(within(dialog).getByRole("button", { name: "Create Event" }));
@@ -126,8 +127,9 @@ describe("managing events", () => {
 
     await user.click(await within(section("My Events")).findByText("Riverside Book Swap"));
     const dialog = await screen.findByRole("dialog");
+    expect(within(dialog).getByLabelText(/Event name/)).toBeDisabled();
     await user.click(within(dialog).getByRole("button", { name: "Edit" }));
-    const name = within(dialog).getByLabelText(/Event Name/);
+    const name = within(dialog).getByLabelText(/Event name/);
     await user.clear(name);
     await user.type(name, "Riverside Book Swap II");
     await user.click(within(dialog).getByRole("button", { name: "Update Event" }));
@@ -137,12 +139,24 @@ describe("managing events", () => {
     ).toBeInTheDocument();
   });
 
+  it("opens the form ready to edit from the card's Edit button", async () => {
+    const { user } = renderApp("/");
+
+    await user.click(
+      await within(section("My Events")).findByRole("button", { name: "Edit Riverside Book Swap" })
+    );
+
+    const dialog = await screen.findByRole("dialog");
+    expect(within(dialog).getByLabelText(/Event name/)).toBeEnabled();
+    expect(within(dialog).getByRole("button", { name: "Update Event" })).toBeInTheDocument();
+  });
+
   it("deletes an event and closes the confirmation", async () => {
     server.use(http.delete(`${API}/api/v1/events/1`, () => new HttpResponse(null, { status: 204 })));
-    const { user, container } = renderApp("/");
+    const { user } = renderApp("/");
     await within(section("My Events")).findByText("Riverside Book Swap");
 
-    await user.click(container.querySelector(".delete-event"));
+    await user.click(screen.getByRole("button", { name: "Delete Riverside Book Swap" }));
     await user.click(await screen.findByRole("button", { name: "Delete" }));
 
     await waitFor(() =>
@@ -157,10 +171,10 @@ describe("managing events", () => {
         HttpResponse.json({ errors: ["You are not allowed to perform this action"] }, { status: 403 })
       )
     );
-    const { user, container } = renderApp("/");
+    const { user } = renderApp("/");
     await within(section("My Events")).findByText("Riverside Book Swap");
 
-    await user.click(container.querySelector(".delete-event"));
+    await user.click(screen.getByRole("button", { name: "Delete Riverside Book Swap" }));
     await user.click(await screen.findByRole("button", { name: "Delete" }));
 
     expect(await screen.findByRole("alert")).toHaveTextContent("not allowed");
@@ -179,7 +193,7 @@ describe("managing events", () => {
     const joinable = section("Join Upcoming Events");
     await within(joinable).findByText("Community Garden Workday");
 
-    await user.click(within(joinable).getByRole("button", { name: "Join" }));
+    await user.click(within(joinable).getByRole("button", { name: "Join Community Garden Workday" }));
     await user.click(within(await screen.findByRole("dialog")).getByRole("button", { name: "Join" }));
 
     expect(
@@ -201,7 +215,7 @@ describe("event details", () => {
     await user.click(await within(section("Joined Events")).findByText("Saturday Trail Run"));
 
     expect(await screen.findByText("North Gate, Hill Park")).toBeInTheDocument();
-    expect(screen.getByText("April 3, 2027")).toBeInTheDocument();
+    expect(screen.getByText(/April 3, 2027/)).toBeInTheDocument();
   });
 
   it("says when an event does not exist", async () => {
@@ -212,7 +226,7 @@ describe("event details", () => {
     );
     renderApp("/events/404");
 
-    expect(await screen.findByText("Event not found")).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Event not found" })).toBeInTheDocument();
   });
 
   it("offers a retry when the server fails", async () => {

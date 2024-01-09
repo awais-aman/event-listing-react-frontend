@@ -1,18 +1,10 @@
 import { useState } from "react";
-import { Form, Button, Container, Row, Col } from "react-bootstrap";
-import { BsFillPersonFill, BsLockFill } from "react-icons/bs";
-import { useLocation, useNavigate } from "react-router-dom";
-import styled from "styled-components";
+import { Form, Button, Container } from "react-bootstrap";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useEvent } from "../context/EventContext";
 import { login } from "../services/authService";
 import { describeApiError } from "../services/errors";
 import { toast } from "../services/toast";
-
-const StyledForm = styled(Form)`
-  background-color: #f8f9fa;
-  padding: 20px;
-  border-radius: 10px;
-`;
 
 const loginErrorMessage = (error) => {
   if (error.response?.status === 401) return "Email or password is incorrect.";
@@ -47,58 +39,40 @@ const SignIn = () => {
   };
 
   return (
-    <Container className="my-5">
-      <Row className="justify-content-center">
-        <Col md={6}>
-          <StyledForm onSubmit={handleSubmit}>
-            <h2 className="text-center mb-4">Sign In</h2>
-
-            <Form.Group controlId="formEmail">
-              <Form.Label>Email</Form.Label>
-              <div className="input-group">
-                <div className="input-group-prepend">
-                  <span className="input-group-text icon">
-                    <BsFillPersonFill size={30} />
-                  </span>
-                </div>
-                <Form.Control
-                  type="email"
-                  name="email"
-                  autoComplete="email"
-                  value={credentials.email}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-            </Form.Group>
-
-            <Form.Group controlId="formPassword">
-              <Form.Label>Password</Form.Label>
-              <div className="input-group">
-                <div className="input-group-prepend">
-                  <span className="input-group-text icon">
-                    <BsLockFill size={30} />
-                  </span>
-                </div>
-                <Form.Control
-                  type="password"
-                  name="password"
-                  autoComplete="current-password"
-                  value={credentials.password}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-            </Form.Group>
-            <br />
-            <div className="text-center">
-              <Button variant="primary" type="submit" disabled={submitting}>
-                {submitting ? "Signing in..." : "Sign In"}
-              </Button>
-            </div>
-          </StyledForm>
-        </Col>
-      </Row>
+    <Container className="auth-page">
+      <Form className="auth-card" onSubmit={handleSubmit}>
+        <h1 className="mb-4">Sign In</h1>
+        <Form.Group className="mb-3" controlId="formEmail">
+          <Form.Label>Email</Form.Label>
+          <Form.Control
+            type="email"
+            name="email"
+            autoComplete="email"
+            value={credentials.email}
+            onChange={handleChange}
+            required
+          />
+        </Form.Group>
+        <Form.Group className="mb-3" controlId="formPassword">
+          <Form.Label>Password</Form.Label>
+          <Form.Control
+            type="password"
+            name="password"
+            autoComplete="current-password"
+            value={credentials.password}
+            onChange={handleChange}
+            required
+          />
+        </Form.Group>
+        <div className="d-grid mt-4">
+          <Button variant="primary" type="submit" disabled={submitting}>
+            {submitting ? "Signing in..." : "Sign In"}
+          </Button>
+        </div>
+        <p className="mt-3 mb-0">
+          New here? <Link to="/signup">Create an account</Link>
+        </p>
+      </Form>
     </Container>
   );
 };

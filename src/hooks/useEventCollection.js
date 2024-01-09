@@ -62,6 +62,7 @@ export const useEventCollection = (key) => {
 
   return {
     events: items,
+    total,
     status,
     error,
     retry,

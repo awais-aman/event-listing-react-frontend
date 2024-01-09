@@ -1,20 +1,33 @@
 import { Alert, Button, Container, Row, Spinner } from "react-bootstrap";
 import { useEventCollection } from "../hooks/useEventCollection";
 import EventCard from "./EventCard";
-import { EventHeading } from "./EventHeading";
 
-const EventSection = ({ collection, title, emptyMessage, className }) => {
-  const { events, status, error, retry, loadMore, hasMore } = useEventCollection(collection);
+const EventSection = ({ collection, title, emptyMessage }) => {
+  const { events, total, status, error, retry, loadMore, hasMore } =
+    useEventCollection(collection);
   const headingId = `${collection}-heading`;
   const loading = status === "loading";
 
   return (
-    <section className={`${className} py-5`} aria-labelledby={headingId} aria-busy={loading}>
+    <section
+      className={`event-section event-section--${collection}`}
+      aria-labelledby={headingId}
+      aria-busy={loading}
+    >
       <Container>
-        <EventHeading id={headingId}>{title}</EventHeading>
+        <div className="section-header">
+          <h2 id={headingId} className="section-title">
+            {title}
+          </h2>
+          {total > 0 && (
+            <span className="section-count">
+              {total} {total === 1 ? "event" : "events"}
+            </span>
+          )}
+        </div>
 
         {status === "error" && (
-          <Alert variant="danger" className="d-flex justify-content-between align-items-center">
+          <Alert variant="danger" className="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-4">
             <span>{error}</span>
             <Button variant="outline-danger" size="sm" onClick={retry}>
               Try again
@@ -23,7 +36,7 @@ const EventSection = ({ collection, title, emptyMessage, className }) => {
         )}
 
         {status === "ready" && events.length === 0 && (
-          <p className="text-center mt-4 fs-5">{emptyMessage}</p>
+          <p className="empty-state">{emptyMessage}</p>
         )}
 
         {events.length > 0 && (
