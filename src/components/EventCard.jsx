@@ -1,24 +1,26 @@
 import { useState } from "react";
 import { Button, Card, Col, Modal } from "react-bootstrap";
-import axios from "../services/api";
-import EventForm from './EventForm';
+import { useNavigate } from "react-router-dom";
+import api from "../services/api";
+import EventForm from "./EventForm";
 import eventImg from "../assets/images/event1.avif";
 import { useEvent } from "../context/EventContext";
+import { describeApiError } from "../services/errors";
 import { toast } from "../services/toast";
 
-const EventCard = ({ event, isMine=false, isJoined=false, actionType, events }) => {
+const EventCard = ({ event, collection }) => {
+  const navigate = useNavigate();
+  const { dispatch } = useEvent();
   const [showModal, setShowModal] = useState(false);
   const [deleteModal, setDeleteModal] = useState(false);
   const [joinModal, setJoinModal] = useState(false);
+  const [pending, setPending] = useState(false);
 
-  const { state: { joinedEvents }, dispatch } = useEvent();
+  const isMine = collection === "mine";
+  const canJoin = collection === "joinable";
 
-  const handleEditEvent = () => {
-    setShowModal(true);
-  };
-
-  const handleCloseModal = () => {
-    setShowModal(false);
+  const reportFailure = (error) => {
+    if (!error.sessionExpired) toast.error(describeApiError(error), "Error");
   };
 
   const showJoinModal = (e) => {
@@ -35,64 +37,69 @@ const EventCard = ({ event, isMine=false, isJoined=false, actionType, events }) 
 
   const handleCardClick = () => {
     if (isMine) {
-      handleEditEvent();
+      setShowModal(true);
     } else {
-      window.location.href = `/events/${event.id}`;
+      navigate(`/events/${event.id}`);
     }
   };
 
-  const handleDelete = async (e) => {
-    e.preventDefault();
-
+  const handleDelete = async () => {
+    setPending(true);
     try {
-      await axios.delete(`/api/v1/events/${event.id}`);
-      dispatch({ type: actionType, payload: events.filter((ev) => ev.id !== event.id) });
-      toast.success("Event Deleted successfully", "Success");
+      await api.delete(`/api/v1/events/${event.id}`);
+      setDeleteModal(false);
+      dispatch({ type: "REMOVED", key: "mine", id: event.id });
+      toast.success("Event deleted.", "Success");
     } catch (error) {
-      if (!error.sessionExpired) toast.error("Something went wrong!", "Error");
+      setPending(false);
+      setDeleteModal(false);
+      reportFailure(error);
     }
   };
 
-  const handleJoin = async (e) => {
-    e.preventDefault();
-
+  const handleJoin = async () => {
+    setPending(true);
     try {
-      await axios.post(`/api/v1/events/add_user_to_events?event_id=${event.id}`);
-      dispatch({ type: actionType, payload: events.filter((ev) => ev.id !== event.id) });
-      dispatch({ type: "JOINED_EVENTS", payload: [...joinedEvents, event] })
+      await api.post("/api/v1/events/add_user_to_events", null, {
+        params: { event_id: event.id },
+      });
       setJoinModal(false);
-      toast.success("Event joined successfully", "Success");
+      dispatch({ type: "REMOVED", key: "joinable", id: event.id });
+      dispatch({ type: "ADDED", key: "joined", event });
+      toast.success("You have joined this event.", "Success");
     } catch (error) {
-      if (!error.sessionExpired) toast.error("Something went wrong!", "Error");
+      setPending(false);
+      setJoinModal(false);
+      reportFailure(error);
     }
   };
 
   return (
     <>
-      <Modal show={showModal} onHide={handleCloseModal}>
+      <Modal show={showModal} onHide={() => setShowModal(false)}>
         <Modal.Header closeButton>
           <Modal.Title>Edit Event</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <EventForm onClose={handleCloseModal} event={event} />
+          <EventForm onClose={() => setShowModal(false)} event={event} />
         </Modal.Body>
       </Modal>
       <Modal show={deleteModal} onHide={() => setDeleteModal(false)}>
         <Modal.Header>
-          <Modal.Title>Are you sure to delete this event permanently?</Modal.Title>
+          <Modal.Title>Delete this event permanently?</Modal.Title>
         </Modal.Header>
         <Modal.Body className="text-end">
           <Button className="b-1 border-secondary text-secondary me-3" variant="light" onClick={() => setDeleteModal(false)}>Cancel</Button>
-          <Button variant="danger" onClick={handleDelete}>Delete</Button>
+          <Button variant="danger" onClick={handleDelete} disabled={pending}>Delete</Button>
         </Modal.Body>
       </Modal>
       <Modal show={joinModal} onHide={() => setJoinModal(false)}>
         <Modal.Header>
-          <Modal.Title>Are you sure to Join this event?</Modal.Title>
+          <Modal.Title>Join this event?</Modal.Title>
         </Modal.Header>
         <Modal.Body className="text-end">
           <Button className="b-1 border-secondary text-secondary me-3" variant="light" onClick={() => setJoinModal(false)}>Cancel</Button>
-          <Button variant="primary" onClick={(e) => handleJoin(e)}>Join</Button>
+          <Button variant="primary" onClick={handleJoin} disabled={pending}>Join</Button>
         </Modal.Body>
       </Modal>
       <Col xs={12} sm={6} md={4} lg={3} className="mt-4">
@@ -109,7 +116,7 @@ const EventCard = ({ event, isMine=false, isJoined=false, actionType, events }) 
             <Card.Title>{event.name}</Card.Title>
             <Card.Text>{event.description}</Card.Text>
           {
-            !isMine && !isJoined && (
+            canJoin && (
               <button className="btn btn-large btn-warning w-100 mt-auto" onClick={showJoinModal}>
                 Join
               </button>

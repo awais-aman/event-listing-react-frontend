@@ -5,10 +5,12 @@ import { toast } from "../services/toast";
 
 const EventContext = createContext();
 
+const emptyCollection = { items: [], total: 0 };
+
 const emptyCollections = {
-  myEvents: [],
-  joinedEvents: [],
-  joinEvents: [],
+  mine: emptyCollection,
+  joined: emptyCollection,
+  joinable: emptyCollection,
 };
 
 const createInitialState = () => ({
@@ -16,18 +18,46 @@ const createInitialState = () => ({
   ...emptyCollections,
 });
 
+const withoutId = (items, id) => items.filter((item) => item.id !== id);
+
 const eventReducer = (state, action) => {
+  const collection = state[action.key];
+
   switch (action.type) {
     case "SIGN_IN":
       return { ...state, isAuthenticated: true };
     case "SIGN_OUT":
       return { ...state, isAuthenticated: false, ...emptyCollections };
-    case "MY_EVENTS":
-      return { ...state, myEvents: action.payload };
-    case "JOINED_EVENTS":
-      return { ...state, joinedEvents: action.payload };
-    case "JOIN_EVENTS":
-      return { ...state, joinEvents: action.payload };
+    case "LOADED": {
+      const loaded = action.append
+        ? [...collection.items, ...action.items.filter((e) => !collection.items.some((c) => c.id === e.id))]
+        : action.items;
+      return { ...state, [action.key]: { items: loaded, total: action.total } };
+    }
+    case "ADDED":
+      return {
+        ...state,
+        [action.key]: {
+          items: [action.event, ...withoutId(collection.items, action.event.id)],
+          total: collection.total + 1,
+        },
+      };
+    case "UPDATED":
+      return {
+        ...state,
+        [action.key]: {
+          ...collection,
+          items: collection.items.map((e) => (e.id === action.event.id ? action.event : e)),
+        },
+      };
+    case "REMOVED":
+      return {
+        ...state,
+        [action.key]: {
+          items: withoutId(collection.items, action.id),
+          total: Math.max(collection.total - 1, 0),
+        },
+      };
     default:
       return state;
   }

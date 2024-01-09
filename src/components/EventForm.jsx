@@ -2,8 +2,9 @@ import { useState } from "react";
 import { Form, Button, Row, Col } from "react-bootstrap";
 import { BsCalendar, BsGeoAlt, BsPerson } from "react-icons/bs";
 import DatePicker from "react-datepicker";
-import axios from "../services/api";
+import api from "../services/api";
 import styled from "styled-components";
+import { describeApiError } from "../services/errors";
 import { toast } from "../services/toast";
 import { useEvent } from "../context/EventContext";
 import "react-datepicker/dist/react-datepicker.css";
@@ -23,9 +24,7 @@ const EventForm = ({
     location: "",
   },
 }) => {
-  const { state, dispatch } = useEvent();
-  const events = state.myEvents || [];
-
+  const { dispatch } = useEvent();
   const isEdit = !!event.id;
 
   const [formData, setFormData] = useState({
@@ -37,6 +36,7 @@ const EventForm = ({
     },
   });
   const [canEdit, setCanEdit] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const handleChange = (e) => {
     setFormData({
@@ -55,24 +55,20 @@ const EventForm = ({
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    setSubmitting(true);
     try {
       if (isEdit) {
-        await axios.patch(`/api/v1/events/${event.id}`, formData);
-        dispatch({ type: "MY_EVENTS", payload: events.map((ev) => {
-          if (ev.id === event.id) {
-            return { id: event.id, ...formData.event };
-          } else {
-            return ev;
-          }
-        })});
+        const response = await api.patch(`/api/v1/events/${event.id}`, formData);
+        dispatch({ type: "UPDATED", key: "mine", event: response.data });
       } else {
-        const response = await axios.post("/api/v1/events", formData);
-        dispatch({ type: "MY_EVENTS", payload: [...events, response.data]});
+        const response = await api.post("/api/v1/events", formData);
+        dispatch({ type: "ADDED", key: "mine", event: response.data });
       }
-      toast.success(`Event is ${isEdit ? "updated" : "created"} successfully!`, "Success");
+      toast.success(`Event ${isEdit ? "updated" : "created"}.`, "Success");
       onClose();
     } catch (error) {
-      if (!error.sessionExpired) toast.error("Something went wrong!", "Error");
+      setSubmitting(false);
+      if (!error.sessionExpired) toast.error(describeApiError(error), "Could not save the event");
     }
   };
 
@@ -162,7 +158,7 @@ const EventForm = ({
         }
         {
           (!isEdit || (isEdit && canEdit)) && (
-            <Button variant="primary" type="submit" className="ms-3">
+            <Button variant="primary" type="submit" className="ms-3" disabled={submitting}>
               {isEdit ? "Update" : "Create"} Event
             </Button>
           )

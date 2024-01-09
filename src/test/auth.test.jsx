@@ -52,6 +52,20 @@ describe("signing in", () => {
     expect(screen.getByRole("heading", { name: "Sign In" })).toBeInTheDocument();
   });
 
+  it("returns to the page that asked for a sign-in", async () => {
+    server.use(
+      http.get(`${API}/api/v1/events/7`, () =>
+        HttpResponse.json({ id: 7, name: "Lantern Walk", description: "", date: "2027-01-01T18:00:00Z", location: "Quay" })
+      )
+    );
+    const { user } = renderApp("/events/7");
+
+    expect(await screen.findByRole("heading", { name: "Sign In" })).toBeInTheDocument();
+    await signInWith(user);
+
+    expect(await screen.findByText("Lantern Walk")).toBeInTheDocument();
+  });
+
   it("shows the throttling message from the API", async () => {
     server.use(
       http.post(`${API}/login`, () =>
